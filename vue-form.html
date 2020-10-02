@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <script src='https://unpkg.com/vue@next'></script>
+    <style>
+        #vue-form>form>div.input-control {
+            margin: 15px 0px;
+        }
+
+        #vue-form div.label {
+            font-weight: 700;
+        }
+
+        .can-submit-message {
+            color: #00ff00;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="vue-form">
+        <form @submit.prevent="submit">
+            <div class="input-control">
+                <div class="label">
+                    Name
+                </div>
+                <div>
+                    <input id="name" v-model.trim="name" @blur="validate('name', $event.target.value)" />
+                </div>
+                <error-component :text="validations.name" v-if="validations.name"></error-component>
+            </div>
+            <div class="input-control">
+                <div class="label">
+                    Date of birth
+                </div>
+                <div>
+                    <input id="date-of-birth" v-model="dateOfBirth" type="date"
+                        @blur="validate('dateOfBirth', $event.target.value)" />
+                </div>
+                <error-component :text="validations.dateOfBirth" v-if="validations.dateOfBirth"></error-component>
+            </div>
+            <div class="input-control">
+                <div class="label"> Gender </div>
+                <div>
+                    <span>
+                        <label for="male-radio"> Male </label>
+                        <input id="male-radio" v-model="gender" type="radio" value="m" />
+                    </span>
+                    <span>
+                        <label for="female-radio"> Female </label>
+                        <input id="female-radio" v-model="gender" type="radio" value="f" />
+                    </span>
+                </div>
+                <error-component :text="validations.gender" v-if="validations.gender"></error-component>
+            </div>
+            <div class="input-control">
+                <div class="label"> Technologies </div>
+                <div>
+                    <span>
+                        <input type="checkbox" v-model="technologies" value="react" id="react" />
+                        <label for="react"> React </label>
+                    </span>
+                    <span>
+                        <input type="checkbox" v-model="technologies" value="vue" id="vue" />
+                        <label for="vue"> Vue </label>
+                    </span>
+                    <span>
+                        <input type="checkbox" v-model="technologies" value="laravel" id="laravel" />
+                        <label for="laravel"> Laravel </label>
+                    </span>
+                    <span>
+                        <input type="checkbox" v-model="technologies" value="spring" id="spring" />
+                        <label for="spring"> Spring </label>
+                    </span>
+                    <span>
+                        <input type="checkbox" v-model="technologies" value="android" id="android" />
+                        <label for="android"> Android </label>
+                    </span>
+                </div>
+                <error-component :text="validations.technologies" v-if="validations.technologies"></error-component>
+            </div>
+            <div>
+                <button type="submit">
+                    Submit
+                </button>
+            </div>
+        </form>
+        <div v-if="canSubmit" class="can-submit-message">
+            <h4> You can submit the form </h4>
+        </div>
+    </div>
+    <script>
+        const app = Vue.createApp({
+            data() {
+                return {
+                    name: "",
+                    dateOfBirth: "",
+                    gender: "",
+                    technologies: [],
+                    validations: {},
+                    canSubmit: false,
+                };
+            },
+            methods: {
+                submit() {
+                    ["name", "dateOfBirth", "gender", "technologies"].forEach(key => this.validate(key, this[key]));
+                    this.canSubmit = Object.values(this.validations).every(e => !e.length);
+                },
+                validate(key, value) {
+                    switch (key) {
+                        case 'name':
+                            if (!value.length) {
+                                this.validations.name = "Name is required";
+                            } else if (!/^[a-zA-Z]+( [a-zA-Z]+)?$/.test(value)) {
+                                this.validations.name = "Name can consist of alphabets only";
+                            } else {
+                                this.validations.name = "";
+                            }
+                            break;
+                        case 'dateOfBirth':
+                            if (!value.length) {
+                                this.validations.dateOfBirth = "Date of birth is required";
+                            } else {
+                                const now = new Date().getTime();
+                                const enteredDate = new Date(value).getTime();
+                                if (enteredDate > now) {
+                                    this.validations.dateOfBirth = "Future date is not allowed";
+                                } else {
+                                    this.validations.dateOfBirth = "";
+                                }
+                            }
+                            break;
+                        case 'gender':
+                            if (!value) {
+                                this.validations.gender = "Please select a gender";
+                            } else {
+                                this.validations.gender = "";
+                            }
+                            break;
+                        case 'technologies':
+                            if (!value.length) {
+                                this.validations.technologies = "Atleast select one technology";
+                            } else {
+                                this.validations.technologies = "";
+                            }
+                            break;
+                    }
+                }
+            }
+        });
+        app.component('error-component', {
+            props: ['text'],
+            template: `
+                <div style="color: #f66;">
+                    {{text}}
+                </div>
+            `,
+        });
+        app.mount("#vue-form");
+    </script>
+</body>
+
+</html>
